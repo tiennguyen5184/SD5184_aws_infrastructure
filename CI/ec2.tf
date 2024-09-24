@@ -65,31 +65,37 @@ resource "aws_iam_policy" "ec2_policy" {
       {
         "Effect" : "Allow",
         "Action" : [
-          "ecr:PutLifecyclePolicy",
-          "ecr:PutImageTagMutability",
-          "ecr:StartImageScan",
-          "ecr:CreateRepository",
-          "ecr:PutImageScanningConfiguration",
-          "ecr:UploadLayerPart",
-          "ecr:BatchDeleteImage",
-          "ecr:DeleteLifecyclePolicy",
-          "ecr:DeleteRepository",
-          "ecr:PutImage",
-          "ecr:CompleteLayerUpload",
-          "ecr:StartLifecyclePolicyPreview",
-          "ecr:InitiateLayerUpload",
-          "ecr:DeleteRepositoryPolicy"
+          "ecr-public:PutLifecyclePolicy",
+          "ecr-public:PutImageTagMutability",
+          "ecr-public:StartImageScan",
+          "ecr-public:CreateRepository",
+          "ecr-public:PutImageScanningConfiguration",
+          "ecr-public:UploadLayerPart",
+          "ecr-public:BatchDeleteImage",
+          "ecr-public:DeleteLifecyclePolicy",
+          "ecr-public:DeleteRepository",
+          "ecr-public:PutImage",
+          "ecr-public:CompleteLayerUpload",
+          "ecr-public:StartLifecyclePolicyPreview",
+          "ecr-public:InitiateLayerUpload",
+          "ecr-public:DeleteRepositoryPolicy",
+          "ecr-public:GetAuthorizationToken"
         ],
         "Resource" : "arn:aws:ecr:us-east-1:091137845411:repository/sd5184_msa"
       },
       {
         "Effect" : "Allow",
-        "Action" : "ecr:GetAuthorizationToken",
+        "Action" : "ecr-public:GetAuthorizationToken",
         "Resource" : "*"
       },
       {
         "Effect" : "Allow",
-        "Action" : "ecr:BatchCheckLayerAvailability",
+        "Action" : "sts:GetServiceBearerToken",
+        "Resource" : "*"
+      },
+      {
+        "Effect" : "Allow",
+        "Action" : "ecr-public:BatchCheckLayerAvailability",
         "Resource" : "arn:aws:ecr:us-east-1:091137845411:repository/sd5184_msa"
       }
     ]
@@ -114,7 +120,8 @@ resource "aws_iam_role" "ec2_role" {
         Principal = {
           Service = "ec2.amazonaws.com"
         }
-      }
+      },
+            
     ]
   })
 }
