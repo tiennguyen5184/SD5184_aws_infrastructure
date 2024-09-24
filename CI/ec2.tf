@@ -3,7 +3,7 @@ data "aws_ssm_parameter" "ubuntu_ami" {
 }
 
 provider "aws" {
-  region =  "us-east-1" # Default region 
+  region = "us-east-1" # Default region 
 }
 
 resource "aws_security_group" "ci_aws_security_group" {
@@ -43,12 +43,13 @@ resource "aws_security_group" "ci_aws_security_group" {
 }
 
 resource "aws_instance" "ci-server" {
-  ami             = data.aws_ssm_parameter.ubuntu_ami.value
-  instance_type   = "t2.micro" # Change this to your desired instance type
-  security_groups = [aws_security_group.ci_aws_security_group.name]
-  user_data       = "${file("${path.module}/docker-install.sh")}"
+  ami                  = data.aws_ssm_parameter.ubuntu_ami.value
+  instance_type        = "t2.micro" # Change this to your desired instance type
+  security_groups      = [aws_security_group.ci_aws_security_group.name]
+  user_data            = file("${path.module}/docker-install.sh")
+  iam_instance_profile = aws_iam_instance_profile.ec2_instance_profile.name
   root_block_device {
-    volume_size = 30  # Size in GB
+    volume_size = 30 # Size in GB
   }
 
   tags = {
@@ -56,3 +57,64 @@ resource "aws_instance" "ci-server" {
   }
 }
 
+resource "aws_iam_policy" "ec2_policy" {
+  name = "ec2_policy"
+  policy = jsonencode({
+    "Version" : "2012-10-17",
+    "Statement" : [
+      {
+        "Effect" : "Allow",
+        "Action" : [
+          "ecr:PutLifecyclePolicy",
+          "ecr:PutImageTagMutability",
+          "ecr:StartImageScan",
+          "ecr:CreateRepository",
+          "ecr:PutImageScanningConfiguration",
+          "ecr:UploadLayerPart",
+          "ecr:BatchDeleteImage",
+          "ecr:DeleteLifecyclePolicy",
+          "ecr:DeleteRepository",
+          "ecr:PutImage",
+          "ecr:CompleteLayerUpload",
+          "ecr:StartLifecyclePolicyPreview",
+          "ecr:InitiateLayerUpload",
+          "ecr:DeleteRepositoryPolicy"
+        ],
+        "Resource" : "arn:aws:ecr:us-east-1:091137845411:repository/sd5184_msa"
+      },
+      {
+        "Effect" : "Allow",
+        "Action" : "ecr:GetAuthorizationToken",
+        "Resource" : "*"
+      },
+      {
+        "Effect" : "Allow",
+        "Action" : "ecr:BatchCheckLayerAvailability",
+        "Resource" : "arn:aws:ecr:us-east-1:091137845411:repository/sd5184_msa"
+      }
+    ]
+  })
+}
+resource "aws_iam_instance_profile" "ec2_instance_profile" {
+  name = "ec2_instance_profile"
+  role = aws_iam_role.ec2_role.name
+}
+resource "aws_iam_role_policy_attachment" "ec2_policy_attachment" {
+  role       = aws_iam_role.ec2_role.name
+  policy_arn = aws_iam_policy.ec2_policy.arn
+}
+resource "aws_iam_role" "ec2_role" {
+  name = "ec2_role"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+      }
+    ]
+  })
+}
