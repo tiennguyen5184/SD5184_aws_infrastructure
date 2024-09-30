@@ -1,7 +1,10 @@
+data "aws_caller_identity" "current" {}
 data "aws_ssm_parameter" "ubuntu_ami" {
   name = "/aws/service/canonical/ubuntu/server/22.04/stable/current/amd64/hvm/ebs-gp2/ami-id"
 }
-
+locals {
+    account_id = data.aws_caller_identity.current.account_id
+}
 provider "aws" {
   region = "us-east-1" # Default region 
 }
@@ -81,7 +84,7 @@ resource "aws_iam_policy" "ec2_policy" {
           "ecr-public:DeleteRepositoryPolicy",
           "ecr-public:GetAuthorizationToken"
         ],
-        "Resource" : "arn:aws:ecr:us-east-1:091137845411:repository/sd5184_msa"
+        "Resource" : "arn:aws:ecr:us-east-1:${local.account_id}:repository/sd5184_msa/*"
       },
       {
         "Effect" : "Allow",
@@ -96,7 +99,7 @@ resource "aws_iam_policy" "ec2_policy" {
       {
         "Effect" : "Allow",
         "Action" : "ecr-public:BatchCheckLayerAvailability",
-        "Resource" : "arn:aws:ecr:us-east-1:091137845411:repository/sd5184_msa"
+        "Resource" : "arn:aws:ecr:us-east-1:${local.account_id}:repository/sd5184_msa"
       }
     ]
   })
