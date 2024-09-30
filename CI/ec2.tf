@@ -64,44 +64,33 @@ resource "aws_iam_policy" "ec2_policy" {
   name = "ec2_policy"
   policy = jsonencode({
     "Version" : "2012-10-17",
-    "Statement" : [
-      {
-        "Effect" : "Allow",
-        "Action" : [
-          "ecr-public:PutLifecyclePolicy",
-          "ecr-public:PutImageTagMutability",
-          "ecr-public:StartImageScan",
-          "ecr-public:CreateRepository",
-          "ecr-public:PutImageScanningConfiguration",
-          "ecr-public:UploadLayerPart",
-          "ecr-public:BatchDeleteImage",
-          "ecr-public:DeleteLifecyclePolicy",
-          "ecr-public:DeleteRepository",
-          "ecr-public:PutImage",
-          "ecr-public:CompleteLayerUpload",
-          "ecr-public:StartLifecyclePolicyPreview",
-          "ecr-public:InitiateLayerUpload",
-          "ecr-public:DeleteRepositoryPolicy",
-          "ecr-public:GetAuthorizationToken"
-        ],
-        "Resource" : "arn:aws:ecr:us-east-1:${local.account_id}:repository/sd5184_msa/*"
-      },
-      {
-        "Effect" : "Allow",
-        "Action" : "ecr-public:GetAuthorizationToken",
-        "Resource" : "*"
-      },
-      {
-        "Effect" : "Allow",
-        "Action" : "sts:GetServiceBearerToken",
-        "Resource" : "*"
-      },
-      {
-        "Effect" : "Allow",
-        "Action" : "ecr-public:BatchCheckLayerAvailability",
-        "Resource" : "arn:aws:ecr:us-east-1:${local.account_id}:repository/sd5184_msa"
-      }
-    ]
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "ecr-public:CreateRepository",
+                "ecr-public:UploadLayerPart",
+                "ecr-public:BatchDeleteImage",
+                "ecr-public:DeleteRepository",
+                "ecr-public:PutImage",
+                "ecr-public:CompleteLayerUpload",
+                "ecr-public:InitiateLayerUpload",
+                "ecr-public:DeleteRepositoryPolicy",
+                "ecr-public:GetAuthorizationToken",
+                "ecr-public:BatchCheckLayerAvailability"
+            ],
+            "Resource": "arn:aws:ecr-public::${local.account_id}:repository/*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "ecr-public:GetAuthorizationToken",
+                "ecr-public:DescribeRegistries",
+                "sts:GetServiceBearerToken"
+            ],
+            "Resource": "*"
+        }
+    ],
   })
 }
 resource "aws_iam_instance_profile" "ec2_instance_profile" {
